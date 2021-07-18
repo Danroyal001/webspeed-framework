@@ -1,0 +1,31 @@
+{
+  "name": "webspeed-cms",
+  "version": "0.0.1",
+  "description": "A fast, secure, efficient, scalable and flexible cms build with node.js",
+  "main": "index.ts",
+  "scripts": {
+    "test": "ts-node index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danroyal001/webspeed-cms.git"
+  },
+  "keywords": [
+    "Fast",
+    "Secure",
+    "Efficient",
+    "Scalable",
+    "Flexible",
+    "CMS",
+    "node.js",
+    "http",
+    "websocket",
+    "express"
+  ],
+  "author": "Danroyal001",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/danroyal001/webspeed-cms/issues"
+  },
+  "homepage": "https://github.com/danroyal001/webspeed-cms#readme"
+}
