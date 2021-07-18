@@ -1,0 +1,58 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "strict": true,
+        "jsx": "preserve",
+        "importHelpers": true,
+        "moduleResolution": "node",
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "sourceMap": false,
+        "baseUrl": ".",
+        "types": [
+            "webpack-env",
+            "jest"
+        ],
+        "paths": {
+            "@/*": [
+                "./*"
+            ],
+            "@extensions": [
+                "./extensions"
+            ],
+            "@frontend": [
+                "./frontend"
+            ],
+            "@assets": [
+                "./assets"
+            ],
+            "@databaseModels": [
+                "./databaseModels"
+            ],
+            "@lib": [
+                "./lib"
+            ],
+            "@routingControllers": [
+                "./routingControllers"
+            ]
+        },
+        "lib": [
+            "esnext",
+            "dom",
+            "dom.iterable",
+            "scripthost"
+        ]
+    },
+    "include": [
+        "./index.ts",
+        "./cli.ts",
+        "./config.ts",
+        "./setup.ts",
+        "src/**/*.ts",
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
