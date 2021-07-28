@@ -50,7 +50,7 @@
         "./cli.ts",
         "./config.ts",
         "./setup.ts",
-        "src/**/*.ts",
+        // "src/**/*.ts",
     ],
     "exclude": [
         "node_modules"

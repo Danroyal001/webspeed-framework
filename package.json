@@ -1,10 +1,12 @@
 {
   "name": "webspeed-cms",
   "version": "0.0.1",
-  "description": "A fast, secure, efficient, scalable and flexible cms build with node.js",
+  "description": "A fast, secure, efficient, scalable and flexible cms/web-framework build with node.js",
   "main": "index.ts",
   "scripts": {
-    "test": "ts-node index.ts"
+    "test": "ts-node index.ts",
+    "start": "ts-node index.ts",
+    "serve": "npm start"
   },
   "repository": {
     "type": "git",
