@@ -1,7 +1,7 @@
 {
   "name": "webspeed-cms",
   "version": "0.0.1",
-  "description": "A fast, secure, efficient, scalable and flexible cms/web-framework build with node.js",
+  "description": "A fast, secure, efficient, scalable and flexible cms/web-framework built with node.js",
   "main": "index.ts",
   "scripts": {
     "test": "ts-node index.ts",
