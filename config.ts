@@ -1,3 +1,3 @@
-const config = {} as Record<any, any>;
+const config = {} as Record<string, any>;
 
 export default config;
