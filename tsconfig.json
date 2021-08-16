@@ -28,14 +28,14 @@
             "@assets": [
                 "./assets"
             ],
-            "@databaseModels": [
-                "./databaseModels"
+            "@database": [
+                "./database"
             ],
             "@lib": [
                 "./lib"
             ],
             "@routingControllers": [
-                "./routingControllers"
+                "./lib/routingControllers"
             ]
         },
         "lib": [

@@ -1,9 +1,12 @@
+import config from '@/config';
 import express from 'express';
-import config from '../config';
-import serverEvents from './eventEmitters/serverEvents';
+import helmet from 'helmet';
 import applyConfig from './applyConfig';
+import serverEvents from './eventEmitters/serverEvents';
+
 
 const app = express();
+
 
 app.use(express.json());
 app.use(express.urlencoded({
@@ -11,10 +14,21 @@ app.use(express.urlencoded({
 }));
 app.use(express.text());
 app.use(express.raw());
+app.use(helmet());
 
 
-serverEvents.emit('start:applyConfig');
+// handle 404 error
+app.use((req, res, next) => {
+    const err = new Error('404');
+    res.send('Route not found')
+    next(err);
+});
+
+
+serverEvents.emit('start:applyConfig', config);
+// apply app configuration
 applyConfig(config, app);
-serverEvents.emit('end:applyConfig');
+serverEvents.emit('end:applyConfig', config);
+
 
 export default app;
