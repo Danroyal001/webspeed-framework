@@ -1,7 +1,7 @@
 import serverEvents from './eventEmitters/serverEvents';
 import server from './httpServerExporter';
-import PORT from '@/PORT';
-import config from '@/config';
+import PORT from '@PORT';
+import config from '@config';
 
 const init = () => {
 
@@ -9,7 +9,7 @@ const init = () => {
     try {
         serverEvents.emit('start:listening');
         server.listen(PORT, () => {
-            serverEvents.emit('in:listening');
+            serverEvents.emit('listening');
             console.log(`${config.name} is listening on port ${PORT}`);
         });
         serverEvents.emit('end:listening');

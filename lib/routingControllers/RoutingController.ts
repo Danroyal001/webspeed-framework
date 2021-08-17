@@ -1,34 +1,153 @@
 import express from 'express';
 
+
+/**
+ * Operational context for a route
+ */
+export class RouteContext {
+
+    private methods = [
+        'get',
+        'post',
+        'put',
+        'delete',
+        'patch',
+        'options',
+        'lock',
+        'unlock',
+        'trace',
+        'purge'
+    ];
+
+    private responsePayload: any = null;
+
+    private headers: Record<string, string> = {};
+
+    private method: string = 'get';
+
+    /**
+     * Operational context for a route
+     * @param request The express.js request object
+     * @param response The express.js response object
+     */
+    constructor(private request: express.Request, private response: express.Response) {
+
+        this.method = request.method.toLocaleLowerCase();
+
+    }
+
+    setHeader(key: string, value: string) {
+        this.headers[key] = value;
+    }
+
+    getHeader(key: string) { }
+
+    getBody() {
+        return this.request.body;
+    }
+
+    getBodyParam(key: string) {
+        return this.request.body[key];
+    }
+
+    /**
+     * Retrives the query string
+     * @returns The url query string, *without the leading question mark `?`*
+     */
+    getQueryString() {
+        const query = this.request.query;
+        const keys = Object.keys(query);
+        const values = Object.values(query);
+        const length = keys.length;
+        let str = '';
+        keys.forEach((key, index) => {
+            str += `${index == 0 ? '' : '&'}${key}=${values[index]}`;
+        });
+
+        return str;
+    }
+
+    getQueryParam(key: string) {
+        return this.request.query[key];
+    }
+
+    gerUrlParam(key: string) {
+        return this.request.params[key];
+    }
+
+    getUrl() {
+        return this.request.url;
+    }
+
+    getOriginalUrl() {
+        return this.request.originalUrl;
+    }
+
+    getMethod() {
+        return this.method;
+    }
+
+    setResponsePayload(payload: any) {
+        this.responsePayload = payload;
+    }
+
+    finish() {
+        const headerKeys = Object.keys(this.headers);
+        const headerValues = Object.values(this.headers);
+        headerKeys.forEach((key, index) => this.response.setHeader(key, headerValues[index]));
+
+        this.responsePayload != null ? this.response.send(this.responsePayload) : this.response.end();
+    }
+}
+
+
+export interface RoutingControllerOptions {
+    use?: RoutingController[];
+}
+
+
 class RoutingController {
 
     slug: string = '/';
-    private router: express.Router;
+    router: express.Router = express.Router();
 
-    constructor(slug: string, _options?: Record<string, any>) {
+    constructor(slug: string, _options?: RoutingControllerOptions) {
 
         this.slug = slug;
-        this.router = express.Router();
 
-        this.router.get(this.slug, (req, res) => this.get());
-        this.router.post(this.slug, (req, res) => this.post());
-        this.router.put(this.slug, (req, res) => this.put());
-        this.router.delete(this.slug, (req, res) => this.delete());
-        this.router.patch(this.slug, (req, res) => this.patch());
-        this.router.options(this.slug, (req, res) => this.options());
-        this.router.lock(this.slug, (req, res) => this.lock());
-        this.router.unlock(this.slug, (req, res) => this.unlock());
-        this.router.trace(this.slug, (req, res) => this.trace());
-        this.router.purge(this.slug, (req, res) => this.purge());
-        this.router.propfind(this.slug, (req, res) => this.propfind());
-        this.router.proppatch(this.slug, (req, res) => this.proppatch());
-        this.router.all(this.slug, (req, res) => this.all());
-        this.router.move(this.slug, (req, res) => this.move());
-        this.router.mkcol(this.slug, (req, res) => this.mkcol());
-        this.router.mkactivity(this.slug, (req, res) => this.mkactivity());
+        if (_options) {
+            // 
+        }
+
+        this.router.get(this.slug, (req, res) => this.get(new RouteContext(req, res)));
+        this.router.post(this.slug, (req, res) => this.post(new RouteContext(req, res)));
+        this.router.put(this.slug, (req, res) => this.put(new RouteContext(req, res)));
+        this.router.delete(this.slug, (req, res) => this.delete(new RouteContext(req, res)));
+        this.router.patch(this.slug, (req, res) => this.patch(new RouteContext(req, res)));
+        this.router.options(this.slug, (req, res) => this.options(new RouteContext(req, res)));
+        this.router.lock(this.slug, (req, res) => this.lock(new RouteContext(req, res)));
+        this.router.unlock(this.slug, (req, res) => this.unlock(new RouteContext(req, res)));
+        this.router.trace(this.slug, (req, res) => this.trace(new RouteContext(req, res)));
+        this.router.purge(this.slug, (req, res) => this.purge(new RouteContext(req, res)));
+        this.router.propfind(this.slug, (req, res) => this.propfind(new RouteContext(req, res)));
+        this.router.proppatch(this.slug, (req, res) => this.proppatch(new RouteContext(req, res)));
+        this.router.all(this.slug, (req, res) => this.all(new RouteContext(req, res)));
+        this.router.move(this.slug, (req, res) => this.move(new RouteContext(req, res)));
+        this.router.mkcol(this.slug, (req, res) => this.mkcol(new RouteContext(req, res)));
+        this.router.mkactivity(this.slug, (req, res) => this.mkactivity(new RouteContext(req, res)));
+
 
         return this;
 
+    }
+
+    private applyOptions(options: RoutingControllerOptions) {
+        if (options.use) {
+            const { use } = options;
+            use.forEach(controller => {
+                this.router.use(controller.slug, controller.router);
+            });
+        }
     }
 
     private parseFormData(formData: Buffer) {
@@ -39,93 +158,93 @@ class RoutingController {
         // 
     }
 
-    private get() {
+    private get(context: RouteContext) {
         // 
     }
 
-    private post() {
+    private post(context: RouteContext) {
         // 
     }
 
-    private put() {
+    private put(context: RouteContext) {
         // 
     }
 
-    private delete() {
-        // 
-    }
-
-
-    private options() {
+    private delete(context: RouteContext) {
         // 
     }
 
 
-    private patch() {
+    private options(context: RouteContext) {
         // 
     }
 
 
-    private head() {
+    private patch(context: RouteContext) {
         // 
     }
 
 
-    private copy() {
+    private head(context: RouteContext) {
         // 
     }
 
-    private trace() {
+
+    private copy(context: RouteContext) {
+        // 
+    }
+
+    private trace(context: RouteContext) {
 
         // 
     }
 
-    // private link(){
+    // private link(context: RouteContext){
     // 
 
     // }
 
-    // private unlink(){
+    // private unlink(context: RouteContext){
     // 
     // }
 
-    private purge() {
+    private purge(context: RouteContext) {
         // 
     }
 
-    private lock() {
+    private lock(context: RouteContext) {
         // 
     }
 
-    private unlock() {
+    private unlock(context: RouteContext) {
         // 
     }
 
-    // private view(){
+    // private view(context: RouteContext){
     // 
     // }
 
-    private propfind() {
+    private propfind(context: RouteContext) {
         // 
     }
 
-    private proppatch() {
+    private proppatch(context: RouteContext) {
         // 
     }
 
-    private all() {
+    private all(context: RouteContext) {
         // 
     }
 
-    private move() {
+    private move(context: RouteContext) {
         // 
     }
 
-    private mkcol() {
+    private mkcol(context: RouteContext) {
         // 
     }
 
-    private mkactivity() {
+    private mkactivity(context: RouteContext) {
         // 
     }
 }

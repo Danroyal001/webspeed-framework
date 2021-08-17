@@ -9,34 +9,67 @@
         "skipLibCheck": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "baseUrl": ".",
         "types": [
             "webpack-env",
             "jest"
         ],
         "paths": {
+            "@extensions/*": [
+                "./extensions/*"
+            ],
+            "@frontend/*": [
+                "./frontend/*"
+            ],
+            "@assets/*": [
+                "./assets/*"
+            ],
+            "@assets-js/*": [
+                "./assets/js/*"
+            ],
+            "@assets-css/*": [
+                "./assets/css/*"
+            ],
+            "@assets-ts/*": [
+                "./assets/ts/*"
+            ],
+            "@assets-img/*": [
+                "./assets/img/*"
+            ],
+            "@assets-json/*": [
+                "./assets/json/*"
+            ],
+            "@database/*": [
+                "./database/*"
+            ],
+            "@lib/*": [
+                "./lib/*"
+            ],
+            "@routingControllers/*": [
+                "./lib/routingControllers/*"
+            ],
+            "@env": [
+                "./env.ts"
+            ],
+            "@cli": [
+                "./cli.ts"
+            ],
+            "@config": [
+                "./config.ts"
+            ],
+            "@setup": [
+                "./setup.ts"
+            ],
+            "@PORT": [
+                "./PORT.ts"
+            ],
+            "@routingControllers": [
+                "./routingControllers/index.ts"
+            ],
             "@/*": [
                 "./*"
             ],
-            "@extensions": [
-                "./extensions"
-            ],
-            "@frontend": [
-                "./frontend"
-            ],
-            "@assets": [
-                "./assets"
-            ],
-            "@database": [
-                "./database"
-            ],
-            "@lib": [
-                "./lib"
-            ],
-            "@routingControllers": [
-                "./lib/routingControllers"
-            ]
         },
         "lib": [
             "esnext",
@@ -50,7 +83,9 @@
         "./cli.ts",
         "./config.ts",
         "./setup.ts",
-        // "src/**/*.ts",
+        "./env.ts",
+        "./PORT.ts",
+        "./src/**/*.ts",
     ],
     "exclude": [
         "node_modules"
