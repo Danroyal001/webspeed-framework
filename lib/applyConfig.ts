@@ -3,6 +3,7 @@ import serverEvents from "./eventEmitters/serverEvents";
 import { io } from "./httpServerExporter";
 import applyRoutes from './applyRoutes';
 import PORT from "@/PORT";
+import routingControllers from './routingControllers/index';
 
 const applyConfig = (config: Record<string, any>, app: express.Express) => {
     
@@ -11,7 +12,7 @@ const applyConfig = (config: Record<string, any>, app: express.Express) => {
 
     serverEvents.emit('start:applyRoutes');
     // apply app routing
-    applyRoutes(app);
+    applyRoutes(app, routingControllers);
     serverEvents.emit('end:applyRoutes');
 
 };
