@@ -1,17 +1,20 @@
 {
     "compilerOptions": {
-        "target": "esnext",
-        "module": "esnext",
+        "target": "ESNext",
+        "module": "CommonJS",
         "strict": true,
         "jsx": "preserve",
         "importHelpers": true,
-        "moduleResolution": "node",
+        "moduleResolution": "Node",
         "skipLibCheck": true,
+        "resolveJsonModule": true,
         "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
         "allowSyntheticDefaultImports": true,
         "sourceMap": true,
         "baseUrl": ".",
         "types": [
+            "node",
             "webpack-env",
             "jest"
         ],
@@ -72,10 +75,7 @@
             ],
         },
         "lib": [
-            "esnext",
-            "dom",
-            "dom.iterable",
-            "scripthost"
+            "ESNext"
         ]
     },
     "include": [
