@@ -8,12 +8,13 @@ import routingControllers from './routingControllers/index';
 const applyConfig = (config: Record<string, any>, app: express.Express) => {
     
     app.set('io', io);
-    app.set('PORT', PORT);
 
     serverEvents.emit('start:applyRoutes');
     // apply app routing
     applyRoutes(app, routingControllers);
     serverEvents.emit('end:applyRoutes');
+    
+    app.set('PORT', PORT);
 
 };
 
