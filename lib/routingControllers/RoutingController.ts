@@ -91,10 +91,14 @@ export class RouteContext {
         this.responsePayload = payload;
     }
 
-    finish() {
+    finish(_payload = void 0) {
         const headerKeys = Object.keys(this.headers);
         const headerValues = Object.values(this.headers);
         headerKeys.forEach((key, index) => this.response.setHeader(key, headerValues[index]));
+
+        if (_payload) {
+            this.responsePayload = _payload;
+        }
 
         this.responsePayload != null ? this.response.send(this.responsePayload) : this.response.end();
     }
@@ -116,7 +120,7 @@ class RoutingController {
         this.slug = slug;
 
         if (_options) {
-            // 
+            this.applyOptions(_options);
         }
 
         this.router.get(this.slug, (req, res) => this.get(new RouteContext(req, res)));
@@ -142,24 +146,27 @@ class RoutingController {
     }
 
     private applyOptions(options: RoutingControllerOptions) {
-        if (options.use) {
-            const { use } = options;
+        const { use } = options;
+        if (use) {
             use.forEach(controller => {
                 this.router.use(controller.slug, controller.router);
             });
         }
     }
 
-    private parseFormData(formData: Buffer) {
-        return RoutingController.parseFormData(formData);
+    private async parseFormData(formData: Buffer) {
+        return await RoutingController.parseFormData(formData);
     }
 
     static parseFormData(formData: Buffer) {
-        // 
+        return new Promise((resolve, reject) => {
+            resolve(formData);
+        })
     }
 
     private get(context: RouteContext) {
-        // 
+        context.setResponsePayload(Buffer.from('<strong>Hello there!</strong>'));
+        return context.finish();
     }
 
     private post(context: RouteContext) {
