@@ -100,7 +100,7 @@ export class RouteContext {
             this.responsePayload = _payload;
         }
 
-        this.responsePayload != null ? this.response.send(this.responsePayload) : this.response.end();
+        this.responsePayload != null ? this.response.status(200).send(this.responsePayload) : this.response.end();
     }
 }
 
@@ -165,7 +165,8 @@ class RoutingController {
     }
 
     private get(context: RouteContext) {
-        context.setResponsePayload(Buffer.from('<strong>Hello there!</strong>'));
+        context.setHeader('Content-Type', 'text/html');
+        context.setResponsePayload('<strong>Hello there!</strong>');
         return context.finish();
     }
 
