@@ -1,6 +1,9 @@
 import express from 'express';
 
 
+export type ResponsePayload = Buffer | JSON | Record<any, any> | string | number | Object | null;
+
+
 /**
  * Operational context for a route
  */
@@ -19,24 +22,28 @@ export class RouteContext {
         'purge'
     ];
 
-    private responsePayload: any = null;
+    private responsePayload: ResponsePayload = null;
 
     private headers: Record<string, string> = {};
 
-    private method: string = 'get';
+    private readonly method: string = 'get';
+
+    next: Function = () => { }
 
     /**
      * Operational context for a route
      * @param request The express.js request object
      * @param response The express.js response object
      */
-    constructor(private request: express.Request, private response: express.Response) {
-
+    constructor(private request: express.Request, private response: express.Response, _next?: Function) {
         this.method = request.method.toLocaleLowerCase();
 
+        if (_next && typeof _next == 'function') {
+            this.next = _next;
+        }
     }
 
-    setHeader(key: string, value: string) {
+    setHeader(key: string, value: any) {
         this.headers[key] = value;
     }
 
@@ -87,33 +94,57 @@ export class RouteContext {
         return this.method;
     }
 
-    setResponsePayload(payload: any) {
+    setResponsePayload(payload: ResponsePayload) {
         this.responsePayload = payload;
     }
 
-    finish(_payload = void 0) {
+
+    /**
+     * Default action for inexistent routes
+     */
+    noRoute() {
+        this.setHeader('Content-Type', 'text/html');
+        this.setHeader('Status-Code', 404);
+        this.setResponsePayload('404 - Resource not found');
+
+        return this.response.redirect(302, '/404');
+    }
+
+
+    /**
+     * 
+     * @param {ResponsePayload} _payload The response body
+     */
+    finish(_payload?: ResponsePayload) {
         const headerKeys = Object.keys(this.headers);
-        const headerValues = Object.values(this.headers);
-        headerKeys.forEach((key, index) => this.response.setHeader(key, headerValues[index]));
+        headerKeys.forEach((key, index) => this.response.setHeader(key, this.headers[key]));
 
         if (_payload) {
             this.responsePayload = _payload;
         }
 
-        this.responsePayload != null ? this.response.status(200).send(this.responsePayload) : this.response.end();
+        console.timeEnd
+        ('response-time');
+
+        if (this.responsePayload) {
+            this.response.status(this.headers['Status-Code'] ? Number(this.headers['Status-Code']) : 200).send(this.responsePayload);
+        } else {
+            this.response.end();
+        }
     }
 }
 
 
 export interface RoutingControllerOptions {
-    use?: RoutingController[];
+    subControllers?: RoutingController[];
 }
 
 
 class RoutingController {
 
-    slug: string = '/';
-    router: express.Router = express.Router();
+    public slug: string = '/';
+
+    public router: express.Router = express.Router();
 
     constructor(slug: string, _options?: RoutingControllerOptions) {
 
@@ -123,22 +154,54 @@ class RoutingController {
             this.applyOptions(_options);
         }
 
-        this.router.get(this.slug, (req, res) => this.get(new RouteContext(req, res)));
-        this.router.post(this.slug, (req, res) => this.post(new RouteContext(req, res)));
-        this.router.put(this.slug, (req, res) => this.put(new RouteContext(req, res)));
-        this.router.delete(this.slug, (req, res) => this.delete(new RouteContext(req, res)));
-        this.router.patch(this.slug, (req, res) => this.patch(new RouteContext(req, res)));
-        this.router.options(this.slug, (req, res) => this.options(new RouteContext(req, res)));
-        this.router.lock(this.slug, (req, res) => this.lock(new RouteContext(req, res)));
-        this.router.unlock(this.slug, (req, res) => this.unlock(new RouteContext(req, res)));
-        this.router.trace(this.slug, (req, res) => this.trace(new RouteContext(req, res)));
-        this.router.purge(this.slug, (req, res) => this.purge(new RouteContext(req, res)));
-        this.router.propfind(this.slug, (req, res) => this.propfind(new RouteContext(req, res)));
-        this.router.proppatch(this.slug, (req, res) => this.proppatch(new RouteContext(req, res)));
-        this.router.all(this.slug, (req, res) => this.all(new RouteContext(req, res)));
-        this.router.move(this.slug, (req, res) => this.move(new RouteContext(req, res)));
-        this.router.mkcol(this.slug, (req, res) => this.mkcol(new RouteContext(req, res)));
-        this.router.mkactivity(this.slug, (req, res) => this.mkactivity(new RouteContext(req, res)));
+        this.router.get(this.slug, (req, res, next) => {
+            this.get(new RouteContext(req, res, next));
+        });
+        this.router.post(this.slug, (req, res, next) => {
+            this.post(new RouteContext(req, res, next));
+        });
+        this.router.put(this.slug, (req, res, next) => {
+            this.put(new RouteContext(req, res, next));
+        });
+        this.router.delete(this.slug, (req, res, next) => {
+            this.delete(new RouteContext(req, res, next));
+        });
+        this.router.patch(this.slug, (req, res, next) => {
+            this.patch(new RouteContext(req, res, next));
+        });
+        this.router.options(this.slug, (req, res, next) => {
+            this.options(new RouteContext(req, res, next));
+        });
+        this.router.lock(this.slug, (req, res, next) => {
+            this.lock(new RouteContext(req, res, next));
+        });
+        this.router.unlock(this.slug, (req, res, next) => {
+            this.unlock(new RouteContext(req, res, next));
+        });
+        this.router.trace(this.slug, (req, res, next) => {
+            this.trace(new RouteContext(req, res, next));
+        });
+        this.router.purge(this.slug, (req, res, next) => {
+            this.purge(new RouteContext(req, res, next));
+        });
+        this.router.propfind(this.slug, (req, res, next) => {
+            this.propfind(new RouteContext(req, res, next));
+        });
+        this.router.proppatch(this.slug, (req, res, next) => {
+            this.proppatch(new RouteContext(req, res, next));
+        });
+        this.router.all(this.slug, (req, res, next) => {
+            this.all(new RouteContext(req, res, next));
+        });
+        this.router.move(this.slug, (req, res, next) => {
+            this.move(new RouteContext(req, res, next));
+        });
+        this.router.mkcol(this.slug, (req, res, next) => {
+            this.mkcol(new RouteContext(req, res, next));
+        });
+        this.router.mkactivity(this.slug, (req, res, next) => {
+            this.mkactivity(new RouteContext(req, res, next));
+        });
 
 
         return this;
@@ -146,9 +209,9 @@ class RoutingController {
     }
 
     private applyOptions(options: RoutingControllerOptions) {
-        const { use } = options;
-        if (use) {
-            use.forEach(controller => {
+        const { subControllers } = options;
+        if (subControllers) {
+            subControllers.forEach(controller => {
                 this.router.use(controller.slug, controller.router);
             });
         }
@@ -164,96 +227,99 @@ class RoutingController {
         })
     }
 
-    private get(context: RouteContext) {
+    // begin request methods
+
+    get(context: RouteContext) {
         context.setHeader('Content-Type', 'text/html');
-        context.setResponsePayload('<strong>Hello there!</strong>');
+        context.setResponsePayload('<strong>Hello world!</strong>');
+
         return context.finish();
     }
 
-    private post(context: RouteContext) {
-        // 
+    post(context: RouteContext) {
+        return context.noRoute();
     }
 
-    private put(context: RouteContext) {
-        // 
+    put(context: RouteContext) {
+        // return context.noRoute();return context.noRoute();
     }
 
-    private delete(context: RouteContext) {
-        // 
-    }
-
-
-    private options(context: RouteContext) {
-        // 
+    delete(context: RouteContext) {
+        return context.noRoute();
     }
 
 
-    private patch(context: RouteContext) {
-        // 
+    options(context: RouteContext) {
+        return context.noRoute();
     }
 
 
-    private head(context: RouteContext) {
-        // 
+    patch(context: RouteContext) {
+        return context.noRoute();
     }
 
 
-    private copy(context: RouteContext) {
-        // 
+    head(context: RouteContext) {
+        return context.noRoute();
     }
 
-    private trace(context: RouteContext) {
 
-        // 
+    copy(context: RouteContext) {
+        return context.noRoute();
     }
 
-    // private link(context: RouteContext){
+    trace(context: RouteContext) {
+
+        return context.noRoute();
+    }
+
+    // link(context: RouteContext){
     // 
 
     // }
 
-    // private unlink(context: RouteContext){
+    // unlink(context: RouteContext){
     // 
     // }
 
-    private purge(context: RouteContext) {
-        // 
+    purge(context: RouteContext) {
+        return context.noRoute();
     }
 
-    private lock(context: RouteContext) {
-        // 
+    lock(context: RouteContext) {
+        return context.noRoute();
     }
 
-    private unlock(context: RouteContext) {
-        // 
+    unlock(context: RouteContext) {
+        return context.noRoute();
     }
 
-    // private view(context: RouteContext){
+    // view(context: RouteContext){
     // 
     // }
 
-    private propfind(context: RouteContext) {
-        // 
+    propfind(context: RouteContext) {
+        return context.noRoute();
     }
 
-    private proppatch(context: RouteContext) {
-        // 
+    proppatch(context: RouteContext) {
+        return context.noRoute();
     }
 
-    private all(context: RouteContext) {
-        // 
+    all(context: RouteContext) {
+        return context.noRoute();
     }
 
-    private move(context: RouteContext) {
-        // 
+    move(context: RouteContext) {
+        return context.noRoute();
     }
 
-    private mkcol(context: RouteContext) {
-        // 
+    mkcol(context: RouteContext) {
+        return context.noRoute();
     }
 
-    private mkactivity(context: RouteContext) {
-        // 
+    mkactivity(context: RouteContext) {
+        return context.noRoute();
     }
 }
 

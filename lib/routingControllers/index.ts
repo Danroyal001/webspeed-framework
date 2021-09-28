@@ -1,7 +1,8 @@
 import RoutingController from "./RoutingController";
+import ctrl from './CustomController'
 
-const routingControllers = [
-    new RoutingController('/')
+let routingControllers = [
+    ctrl
 ]
 
 export default routingControllers;

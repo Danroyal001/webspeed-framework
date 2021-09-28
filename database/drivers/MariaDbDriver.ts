@@ -1,4 +1,4 @@
-import DatabaseDriver from './DatabaseDriver';
+import DatabaseDriver from '../DatabaseDriver';
 
 class MariaDbDriver extends DatabaseDriver {
     constructor() {

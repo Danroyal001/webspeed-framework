@@ -9,11 +9,12 @@ const applyConfig = (config: Record<string, any>, app: express.Express) => {
 
     app.set('io', io);
     app.set('PORT', PORT);
+    app.set('config', config);
 
-    serverEvents.emit('start:applyRoutes', routingControllers);
+    serverEvents.emit('start:applyRoutes', routingControllers, app, applyRoutes);
     // apply app routing
     applyRoutes(app, routingControllers);
-    serverEvents.emit('end:applyRoutes', routingControllers);
+    serverEvents.emit('end:applyRoutes', routingControllers,app);
 
 };
 
