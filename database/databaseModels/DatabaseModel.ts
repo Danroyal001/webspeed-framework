@@ -42,11 +42,11 @@ class DatabaseModel {
     }
 
     toString() {
-        return '[object DatabaseModelParams]';
+        return '[object DatabaseModel]';
     }
 
     static toString() {
-        return '[object DatabaseModelParams]';
+        return '[object DatabaseModel]';
     }
 }
 
