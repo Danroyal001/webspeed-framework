@@ -1,4 +1,5 @@
 import envOptions from './env';
+
 const config = {
 
     name: 'WebSpeed',
@@ -7,6 +8,6 @@ const config = {
 
     ...envOptions
 
-} as Record<string, any>;
+} as Record<any, any>;
 
 export default config;
