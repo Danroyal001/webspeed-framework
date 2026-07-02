@@ -1,6 +1,6 @@
 {
   "name": "webspeed",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A fast, secure, efficient, scalable and flexible cms/web-framework built with node.js",
   "main": "index.ts",
   "scripts": {
