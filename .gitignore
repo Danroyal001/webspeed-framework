@@ -18,4 +18,6 @@ pnpm-debug.log*
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+# Database files
+db_data/
+

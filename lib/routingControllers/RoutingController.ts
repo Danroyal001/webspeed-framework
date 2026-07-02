@@ -1,4 +1,6 @@
 import express from 'express';
+import * as fs from 'fs';
+import * as path from 'path';
 
 
 export type ResponsePayload = Buffer | JSON | Record<any, any> | string | number | Object | null;
@@ -37,6 +39,7 @@ export class RouteContext {
      */
     constructor(private request: express.Request, private response: express.Response, _next?: Function) {
         this.method = request.method.toLocaleLowerCase();
+        console.time('response-time');
 
         if (_next && typeof _next == 'function') {
             this.next = _next;
@@ -44,17 +47,19 @@ export class RouteContext {
     }
 
     setHeader(key: string, value: any) {
-        this.headers[key] = value;
+        this.headers[key] = String(value);
     }
 
-    getHeader(key: string) { }
+    getHeader(key: string) {
+        return this.request.headers[key] || this.headers[key];
+    }
 
     getBody() {
         return this.request.body;
     }
 
     getBodyParam(key: string) {
-        return this.request.body[key];
+        return this.request.body ? this.request.body[key] : undefined;
     }
 
     /**
@@ -65,7 +70,6 @@ export class RouteContext {
         const query = this.request.query;
         const keys = Object.keys(query);
         const values = Object.values(query);
-        const length = keys.length;
         let str = '';
         keys.forEach((key, index) => {
             str += `${index == 0 ? '' : '&'}${key}=${values[index]}`;
@@ -79,6 +83,10 @@ export class RouteContext {
     }
 
     gerUrlParam(key: string) {
+        return this.request.params[key];
+    }
+
+    getUrlParam(key: string) {
         return this.request.params[key];
     }
 
@@ -96,6 +104,36 @@ export class RouteContext {
 
     setResponsePayload(payload: ResponsePayload) {
         this.responsePayload = payload;
+    }
+
+    /**
+     * Render a lightweight template HTML file and replace {{key}} placeholders
+     */
+    render(templatePath: string, data: Record<string, any> = {}): void {
+        const fullPath = path.resolve(process.cwd(), templatePath);
+        try {
+            let html = fs.readFileSync(fullPath, 'utf-8');
+            Object.keys(data).forEach(key => {
+                const placeholder = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
+                html = html.replace(placeholder, data[key]);
+            });
+            this.setHeader('Content-Type', 'text/html');
+            this.finish(html);
+        } catch (error: any) {
+            console.error(`Error rendering template ${templatePath}:`, error);
+            this.setHeader('Status-Code', 500);
+            this.setHeader('Content-Type', 'text/plain');
+            this.finish(`Template rendering error: ${error.message}`);
+        }
+    }
+
+    /**
+     * Send JSON response helper
+     */
+    json(data: any, statusCode: number = 200): void {
+        this.setHeader('Content-Type', 'application/json');
+        this.setHeader('Status-Code', statusCode);
+        this.finish(JSON.stringify(data));
     }
 
 
@@ -119,15 +157,19 @@ export class RouteContext {
         const headerKeys = Object.keys(this.headers);
         headerKeys.forEach((key, index) => this.response.setHeader(key, this.headers[key]));
 
-        if (_payload) {
+        if (_payload !== undefined) {
             this.responsePayload = _payload;
         }
 
-        console.timeEnd
-        ('response-time');
+        try {
+            console.timeEnd('response-time');
+        } catch (e) {
+            // Ignore timer errors
+        }
 
-        if (this.responsePayload) {
-            this.response.status(this.headers['Status-Code'] ? Number(this.headers['Status-Code']) : 200).send(this.responsePayload);
+        if (this.responsePayload !== null && this.responsePayload !== undefined) {
+            const status = this.headers['Status-Code'] ? Number(this.headers['Status-Code']) : 200;
+            this.response.status(status).send(this.responsePayload);
         } else {
             this.response.end();
         }
@@ -154,52 +196,52 @@ class RoutingController {
             this.applyOptions(_options);
         }
 
-        this.router.get(this.slug, (req, res, next) => {
+        this.router.get('/', (req, res, next) => {
             this.get(new RouteContext(req, res, next));
         });
-        this.router.post(this.slug, (req, res, next) => {
+        this.router.post('/', (req, res, next) => {
             this.post(new RouteContext(req, res, next));
         });
-        this.router.put(this.slug, (req, res, next) => {
+        this.router.put('/', (req, res, next) => {
             this.put(new RouteContext(req, res, next));
         });
-        this.router.delete(this.slug, (req, res, next) => {
+        this.router.delete('/', (req, res, next) => {
             this.delete(new RouteContext(req, res, next));
         });
-        this.router.patch(this.slug, (req, res, next) => {
+        this.router.patch('/', (req, res, next) => {
             this.patch(new RouteContext(req, res, next));
         });
-        this.router.options(this.slug, (req, res, next) => {
+        this.router.options('/', (req, res, next) => {
             this.options(new RouteContext(req, res, next));
         });
-        this.router.lock(this.slug, (req, res, next) => {
+        this.router.lock('/', (req, res, next) => {
             this.lock(new RouteContext(req, res, next));
         });
-        this.router.unlock(this.slug, (req, res, next) => {
+        this.router.unlock('/', (req, res, next) => {
             this.unlock(new RouteContext(req, res, next));
         });
-        this.router.trace(this.slug, (req, res, next) => {
+        this.router.trace('/', (req, res, next) => {
             this.trace(new RouteContext(req, res, next));
         });
-        this.router.purge(this.slug, (req, res, next) => {
+        this.router.purge('/', (req, res, next) => {
             this.purge(new RouteContext(req, res, next));
         });
-        this.router.propfind(this.slug, (req, res, next) => {
+        this.router.propfind('/', (req, res, next) => {
             this.propfind(new RouteContext(req, res, next));
         });
-        this.router.proppatch(this.slug, (req, res, next) => {
+        this.router.proppatch('/', (req, res, next) => {
             this.proppatch(new RouteContext(req, res, next));
         });
-        this.router.all(this.slug, (req, res, next) => {
+        this.router.all('/', (req, res, next) => {
             this.all(new RouteContext(req, res, next));
         });
-        this.router.move(this.slug, (req, res, next) => {
+        this.router.move('/', (req, res, next) => {
             this.move(new RouteContext(req, res, next));
         });
-        this.router.mkcol(this.slug, (req, res, next) => {
+        this.router.mkcol('/', (req, res, next) => {
             this.mkcol(new RouteContext(req, res, next));
         });
-        this.router.mkactivity(this.slug, (req, res, next) => {
+        this.router.mkactivity('/', (req, res, next) => {
             this.mkactivity(new RouteContext(req, res, next));
         });
 
