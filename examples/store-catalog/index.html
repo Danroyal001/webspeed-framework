@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .store-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .search-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .search-filters input {
+            background: #151d30;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-family: inherit;
+            flex-grow: 1;
+        }
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .tab {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tab:hover, .tab.active {
+            background: var(--accent-gradient);
+            border-color: transparent;
+            color: white;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 2rem;
+        }
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-color);
+        }
+        .product-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #0f172a;
+            margin-bottom: 1rem;
+        }
+        .product-card h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.2rem;
+        }
+        .product-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0 0 1rem 0;
+            height: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .product-card .price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 1rem;
+        }
+        .cart-status {
+            background: #1e293b;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>WebSpeed E-Commerce</h1>
+        <div class="cart-status">
+            🛒 Cart: <span id="cart-count">0</span> items ($<span id="cart-total">0.00</span>)
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="store-header">
+            <div>
+                <h2>Store Catalog</h2>
+                <p style="color: var(--text-secondary);">Dynamic catalog query filters executing on WebSpeed's ActiveRecord backend.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="/blog" class="btn" style="background: transparent; border: 1px solid var(--border-color);">Blog</a>
+                <a href="/collab" class="btn" style="background: transparent; border: 1px solid var(--border-color);">Collab</a>
+            </div>
+        </div>
+
+        <div class="search-filters">
+            <input type="text" id="search-input" placeholder="Search catalog..." oninput="loadProducts()">
+            <div class="filter-tabs">
+                <button class="tab active" onclick="setCategory('All', this)">All</button>
+                <button class="tab" onclick="setCategory('Electronics', this)">Electronics</button>
+                <button class="tab" onclick="setCategory('Apparel', this)">Apparel</button>
+                <button class="tab" onclick="setCategory('Books', this)">Books</button>
+            </div>
+        </div>
+
+        <div class="product-grid" id="product-grid"></div>
+    </div>
+
+    <script>
+        let currentCategory = 'All';
+        let cart = { items: 0, total: 0 };
+
+        async function loadProducts() {
+            const searchVal = document.getElementById('search-input').value.trim();
+            let url = '/store/api/products?';
+            if (currentCategory !== 'All') {
+                url += `category=${encodeURIComponent(currentCategory)}&`;
+            }
+            if (searchVal) {
+                url += `search=${encodeURIComponent(searchVal)}&`;
+            }
+
+            try {
+                const res = await fetch(url);
+                const products = await res.json();
+                
+                const grid = document.getElementById('product-grid');
+                grid.innerHTML = '';
+                
+                if (products.length === 0) {
+                    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">No products match your search.</p>';
+                    return;
+                }
+
+                products.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.innerHTML = `
+                        <div>
+                            <img src="${p.image || 'https://via.placeholder.com/150'}" alt="${p.name}">
+                            <h4>${p.name}</h4>
+                            <p>${p.description || ''}</p>
+                        </div>
+                        <div>
+                            <div class="price">$${p.price.toFixed(2)}</div>
+                            <button class="btn" style="width: 100%;" onclick="addToCart(${p.price})">Add to Cart</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (err) {
+                console.error('Error loading products:', err);
+            }
+        }
+
+        function setCategory(category, button) {
+            currentCategory = category;
+            
+            // Toggle active state
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            button.classList.add('active');
+
+            loadProducts();
+        }
+
+        function addToCart(price) {
+            cart.items++;
+            cart.total += price;
+            document.getElementById('cart-count').innerText = cart.items;
+            document.getElementById('cart-total').innerText = cart.total.toFixed(2);
+        }
+
+        // Initial load
+        loadProducts();
+    </script>
+</body>
+</html>

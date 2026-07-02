@@ -1,13 +1,18 @@
 import RoutingController from "./RoutingController";
 import ctrl from './CustomController';
 import taskApiController from './TaskApiController';
-import blogController from './BlogController';
+import blogController from '../../examples/cms-blog/BlogController';
+import collabController from '../../examples/collab-board/CollabController';
+import storeController from '../../examples/store-catalog/StoreController';
 
 let routingControllers: RoutingController[] = [
     ctrl,
     taskApiController,
-    blogController
+    blogController,
+    collabController,
+    storeController
 ];
 
 export default routingControllers;
+
 

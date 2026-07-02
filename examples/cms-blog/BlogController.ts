@@ -1,4 +1,4 @@
-import RoutingController, { RouteContext } from './RoutingController';
+import RoutingController, { RouteContext } from '../../lib/routingControllers/RoutingController';
 import Post from '../../database/databaseModels/Post';
 
 class BlogController extends RoutingController {

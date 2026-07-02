@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .collab-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        @media (max-width: 768px) {
+            .collab-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .collab-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: rgba(0,0,0,0.2);
+        }
+        .chat-input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-input-group input {
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            flex-grow: 1;
+            font-family: inherit;
+        }
+        .task-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: border-color 0.2s ease;
+        }
+        .task-item:hover {
+            border-color: var(--accent-color);
+        }
+        .task-item.completed span {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+        .message-item {
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+        .message-item .user {
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        .message-item .time {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>WebSpeed Real-Time Collaboration</h1>
+        <nav>
+            <a href="/blog" class="btn" style="background: transparent; border: 1px solid var(--border-color); margin-right: 0.5rem;">Blog</a>
+            <a href="/store" class="btn" style="background: transparent; border: 1px solid var(--border-color); margin-right: 0.5rem;">Store</a>
+            <span id="username-display" style="font-weight: 500;">Guest</span>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2>Live Collaboration Board</h2>
+        <p style="color: var(--text-secondary);">Showcases WebSpeed's Socket.io real-time syncing combined with the ActiveRecord Database layer.</p>
+
+        <div class="collab-grid">
+            <!-- Real-time Chat -->
+            <div class="collab-panel">
+                <h3>💬 Team Chat</h3>
+                <div class="chat-messages" id="chat-messages"></div>
+                <div class="chat-input-group">
+                    <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="handleChatKey(event)">
+                    <button class="btn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+
+            <!-- Real-time Tasks -->
+            <div class="collab-panel">
+                <h3>✅ Shared Tasks</h3>
+                <div class="task-list" id="task-list"></div>
+                <div class="chat-input-group">
+                    <input type="text" id="task-input" placeholder="Add new task..." onkeypress="handleTaskKey(event)">
+                    <button class="btn" onclick="addTask()">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Generate random username for demo
+        const username = 'User-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        document.getElementById('username-display').innerText = username;
+
+        const socket = io();
+
+        // Join collaboration room
+        socket.emit('collab:join');
+
+        // Init messages & tasks list
+        socket.on('collab:init', (data) => {
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.innerHTML = '';
+            data.messages.forEach(msg => appendMessage(msg));
+            scrollToBottom();
+
+            const taskBox = document.getElementById('task-list');
+            taskBox.innerHTML = '';
+            data.tasks.forEach(task => appendTask(task));
+        });
+
+        // Handle new chat messages
+        socket.on('collab:message-received', (msg) => {
+            appendMessage(msg);
+            scrollToBottom();
+        });
+
+        // Handle real-time task additions
+        socket.on('collab:task-added', (task) => {
+            appendTask(task);
+        });
+
+        // Handle real-time task updates
+        socket.on('collab:task-updated', (task) => {
+            const el = document.getElementById(`task-${task.id}`);
+            if (el) {
+                el.className = `task-item ${task.completed ? 'completed' : ''}`;
+                el.querySelector('input').checked = task.completed;
+            }
+        });
+
+        function appendMessage(msg) {
+            const chatBox = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'message-item';
+            div.innerHTML = `<span class="user">${msg.username}</span><span class="time">${msg.timestamp || ''}</span><br><span>${msg.text}</span>`;
+            chatBox.appendChild(div);
+        }
+
+        function appendTask(task) {
+            const taskBox = document.getElementById('task-list');
+            // Prevent duplicate elements
+            if (document.getElementById(`task-${task.id}`)) return;
+
+            const div = document.createElement('div');
+            div.id = `task-${task.id}`;
+            div.className = `task-item ${task.completed ? 'completed' : ''}`;
+            div.innerHTML = `
+                <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}', this.checked)">
+                <span>${task.title}</span>
+            `;
+            taskBox.appendChild(div);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+            socket.emit('collab:send-message', { username, text });
+            input.value = '';
+        }
+
+        function handleChatKey(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function addTask() {
+            const input = document.getElementById('task-input');
+            const title = input.value.trim();
+            if (!title) return;
+            socket.emit('collab:add-task', { title });
+            input.value = '';
+        }
+
+        function handleTaskKey(e) {
+            if (e.key === 'Enter') addTask();
+        }
+
+        function toggleTask(id, completed) {
+            socket.emit('collab:toggle-task', { id, completed });
+        }
+
+        function scrollToBottom() {
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>

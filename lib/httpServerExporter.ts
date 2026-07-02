@@ -13,7 +13,7 @@ serverEvents.emit('end:createServer', server);
 serverEvents.emit('start:attachSocket', socketIO);
 // attach socket.io
 export const io = new socketIO.Server(server);
-io.on('connection', (e) => console.info('Socket.io connected: ', e));
+io.on('connection', (socket) => console.info('Socket.io connected: ', socket.id));
 serverEvents.emit('end:attachSocket', io);
 
 

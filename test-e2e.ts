@@ -4,6 +4,8 @@ import init from './lib/index';
 import dbConnection from './database/connection';
 import Task from './database/databaseModels/Task';
 import Post from './database/databaseModels/Post';
+import Product from './database/databaseModels/Product';
+import Message from './database/databaseModels/Message';
 import PORT from './PORT';
 
 // Helper to make HTTP requests
@@ -79,9 +81,20 @@ async function runTests() {
         // 2. Database Cleanup & Seeding
         console.log('\n--- Database Cleanup & Seeding ---');
         
-        console.log('Clearing existing Tasks and Posts...');
+        console.log('Clearing existing Tasks, Posts, Products, and Messages...');
         await Task.query().delete();
         await Post.query().delete();
+        await Product.query().delete();
+        await Message.query().delete();
+
+        console.log('Seeding products...');
+        const prod = new Product({
+            name: 'Test Gadget',
+            description: 'A test product for E2E validation.',
+            price: 19.99,
+            category: 'Electronics'
+        });
+        await prod.__saveToDatabase();
 
         console.log('Seeding blog posts...');
         const p1 = new Post({
@@ -173,6 +186,24 @@ async function runTests() {
         // Test 404 redirection
         res = await makeRequest('GET', '/non-existent-route-random');
         assert(res.statusCode === 302, 'Non-existent route redirected to /404 with 302 status');
+
+        // Test GET Real-Time Collab Board page
+        res = await makeRequest('GET', '/collab');
+        assert(res.statusCode === 200, 'GET /collab returns status 200');
+        assert(res.body.includes('WebSpeed Real-Time Collaboration'), 'Collab page rendered with correct title');
+
+        // Test GET E-Commerce Store page
+        res = await makeRequest('GET', '/store');
+        assert(res.statusCode === 200, 'GET /store returns status 200');
+        assert(res.body.includes('WebSpeed E-Commerce'), 'Store page rendered with correct title');
+
+        // Test GET E-Commerce Store Products JSON API
+        res = await makeRequest('GET', '/store/api/products');
+        assert(res.statusCode === 200, 'GET /store/api/products returns status 200');
+        assert(!!(res.headers['content-type']?.includes('application/json')), 'GET /store/api/products Content-Type is application/json');
+        let products = JSON.parse(res.body);
+        assert(Array.isArray(products) && products.length === 1, 'GET /store/api/products returns exactly 1 seeded product');
+        assert(products[0].name === 'Test Gadget', 'Seeded product has correct name');
 
     } catch (error) {
         console.error('Test Execution Error:', error);

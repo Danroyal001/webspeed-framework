@@ -116,6 +116,7 @@ program
         try {
             await dbConnection.connect();
             const User = (await import('./database/databaseModels/User')).default;
+            const Product = (await import('./database/databaseModels/Product')).default;
 
             console.log('Clearing existing users...');
             await User.query().delete();
@@ -127,9 +128,45 @@ program
             const u2 = new User({ username: 'editor', email: 'editor@webspeed.io', role: 'editor' });
             await u2.__saveToDatabase();
 
-            console.log(colors.green('Database seeded successfully with users:'));
-            console.log(colors.yellow(`- ${u1.username} (${u1.email}) [ID: ${u1.id}]`));
-            console.log(colors.yellow(`- ${u2.username} (${u2.email}) [ID: ${u2.id}]`));
+            console.log(colors.green('Database seeded with users.'));
+
+            console.log('Clearing existing products...');
+            await Product.query().delete();
+
+            console.log('Inserting seed products...');
+            const p1 = new Product({
+                name: 'WebSpeed Flagship Phone',
+                description: 'The ultimate smartphone for developer workflows with built-in node compilation.',
+                price: 999.99,
+                category: 'Electronics',
+                image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=400&q=80'
+            });
+            await p1.__saveToDatabase();
+
+            const p2 = new Product({
+                name: 'Leather Developer Jacket',
+                description: 'High-quality leather jacket designed to withstand cold servers and code reviews.',
+                price: 199.50,
+                category: 'Apparel',
+                image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=400&q=80'
+            });
+            await p2.__saveToDatabase();
+
+            const p3 = new Product({
+                name: 'TypeScript Mastery Book',
+                description: 'Master strict type checking, OOP patterns, and advanced generic layouts.',
+                price: 49.99,
+                category: 'Books',
+                image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80'
+            });
+            await p3.__saveToDatabase();
+
+            console.log(colors.green('Database seeded successfully with users and products:'));
+            console.log(colors.yellow(`- ${u1.username} (${u1.email})`));
+            console.log(colors.yellow(`- ${u2.username} (${u2.email})`));
+            console.log(colors.yellow(`- Product: ${p1.name} ($${p1.price})`));
+            console.log(colors.yellow(`- Product: ${p2.name} ($${p2.price})`));
+            console.log(colors.yellow(`- Product: ${p3.name} ($${p3.price})`));
         } catch (error) {
             console.error(colors.red('Seeding failed:'), error);
         } finally {
