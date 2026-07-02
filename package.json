@@ -1,6 +1,9 @@
 {
-  "name": "webspeed",
+  "name": "@danroyal001/webspeed",
   "version": "1.0.0",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "description": "A fast, secure, efficient, scalable and flexible cms/web-framework built with node.js",
   "main": "index.ts",
   "scripts": {
