@@ -5,6 +5,7 @@ import blogController from '../../examples/cms-blog/BlogController';
 import collabController from '../../examples/collab-board/CollabController';
 import storeController from '../../examples/store-catalog/StoreController';
 import authController from './AuthController';
+import adminController from './AdminController';
 
 let routingControllers: RoutingController[] = [
     ctrl,
@@ -12,7 +13,8 @@ let routingControllers: RoutingController[] = [
     blogController,
     collabController,
     storeController,
-    authController
+    authController,
+    adminController
 ];
 
 export default routingControllers;

@@ -98,6 +98,12 @@ class MongoDbDriver extends DatabaseDriver {
         const result = await col.deleteMany(mappedQuery);
         return (result.deletedCount ?? 0) > 0;
     }
+
+    async listCollections(): Promise<string[]> {
+        const db = this.getDb();
+        const cols = await db.listCollections().toArray();
+        return cols.map(c => c.name);
+    }
 }
 
 export default MongoDbDriver;

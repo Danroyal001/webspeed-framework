@@ -235,6 +235,31 @@ async function runTests() {
         assert(profileBody.user.username === 'admin', 'Returned profile username matches logged in user');
         assert(profileBody.user.role === 'admin', 'Returned profile role matches expected');
 
+        // Test 5. WebSpeed Premium Admin Console
+        console.log('\n--- Testing E2E Premium Admin Console ---');
+
+        // A. Test GET Admin Dashboard View
+        res = await makeRequest('GET', '/admin');
+        assert(res.statusCode === 200, 'GET /admin returns status 200');
+        assert(res.body.includes('WebSpeed Premium Admin Console'), 'Admin dashboard rendered with correct title');
+
+        // B. Test GET Admin DB Explorer API
+        res = await makeRequest('GET', '/admin/api/database');
+        assert(res.statusCode === 200, 'GET /admin/api/database returns status 200');
+        assert(!!(res.headers['content-type']?.includes('application/json')), 'Database list content-type is json');
+        let collections = JSON.parse(res.body);
+        assert(Array.isArray(collections), 'Returns an array of collections');
+
+        // C. Test GET Admin WebSockets stats API
+        res = await makeRequest('GET', '/admin/api/websockets');
+        assert(res.statusCode === 200, 'GET /admin/api/websockets returns status 200');
+
+        // D. Test GET Admin Log Analyzer API
+        res = await makeRequest('GET', '/admin/api/logs');
+        assert(res.statusCode === 200, 'GET /admin/api/logs returns status 200');
+        let logs = JSON.parse(res.body);
+        assert(Array.isArray(logs) && logs.length > 0, 'Logs are collected and returned');
+
     } catch (error) {
         console.error('Test Execution Error:', error);
         stats.failed++;

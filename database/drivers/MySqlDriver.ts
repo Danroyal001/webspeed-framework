@@ -278,6 +278,12 @@ class MySqlDriver extends DatabaseDriver {
             throw new Error('Delete query must specify filter parameters.');
         }
     }
+
+    async listCollections(): Promise<string[]> {
+        const pool = this.getPool();
+        const [rows]: any = await pool.query('SHOW TABLES');
+        return rows.map((row: any) => Object.values(row)[0] as string);
+    }
 }
 
 export default MySqlDriver;

@@ -15,6 +15,24 @@ app.use((req, res, next) => {
 
     console.log(`\n${req.method.toUpperCase()} request to ${req.originalUrl} from IP ${req.ip} at time: ${new Date()}\n`);
 
+    const startTime = Date.now();
+    res.on('finish', () => {
+        const responseTime = Date.now() - startTime;
+        const logEntry = {
+            method: req.method,
+            url: req.originalUrl,
+            status: res.statusCode,
+            responseTime: `${responseTime}ms`,
+            ip: req.ip,
+            timestamp: new Date().toLocaleTimeString()
+        };
+        (global as any).webspeedLogs = (global as any).webspeedLogs || [];
+        (global as any).webspeedLogs.push(logEntry);
+        if ((global as any).webspeedLogs.length > 100) {
+            (global as any).webspeedLogs.shift();
+        }
+    });
+
     return next();
 });
 // end pre-request handler

@@ -19,6 +19,10 @@ class MariaDbDriver extends DatabaseDriver {
     async delete(collection: string, query: any): Promise<boolean> {
         return true;
     }
+
+    async listCollections(): Promise<string[]> {
+        return [];
+    }
 }
 
 export default MariaDbDriver;

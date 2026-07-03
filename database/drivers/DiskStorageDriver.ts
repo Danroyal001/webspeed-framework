@@ -105,6 +105,13 @@ class DiskStorageDriver extends DatabaseDriver {
         }
         return false;
     }
+
+    async listCollections(): Promise<string[]> {
+        if (!fs.existsSync(this.dbDir)) return [];
+        return fs.readdirSync(this.dbDir)
+            .filter(file => file.endsWith('.json'))
+            .map(file => file.replace('.json', ''));
+    }
 }
 
 export default DiskStorageDriver;
