@@ -260,6 +260,11 @@ async function runTests() {
         let logs = JSON.parse(res.body);
         assert(Array.isArray(logs) && logs.length > 0, 'Logs are collected and returned');
 
+        // Test GET Premium Showcase Portal page
+        res = await makeRequest('GET', '/premium-showcase');
+        assert(res.statusCode === 200, 'GET /premium-showcase returns status 200');
+        assert(res.body.includes('WebSpeed Features Showcase Portal'), 'Showcase portal page rendered with correct title');
+
     } catch (error) {
         console.error('Test Execution Error:', error);
         stats.failed++;

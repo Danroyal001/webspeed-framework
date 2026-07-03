@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .split-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        @media (max-width: 768px) {
+            .split-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .feature-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-panel.premium {
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+        }
+        .badge-tag {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .badge-tag.free { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981; }
+        .badge-tag.premium { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid #3b82f6; }
+        
+        .interactive-box {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .interactive-box h4 {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+        .form-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .form-row input {
+            background: #151d30;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-family: inherit;
+            flex-grow: 1;
+            font-size: 0.9rem;
+        }
+        .output-box {
+            font-family: monospace;
+            font-size: 0.85rem;
+            background: #090d16;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.05);
+            word-break: break-all;
+            white-space: pre-wrap;
+            color: #10b981;
+        }
+        .output-box.error {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>WebSpeed Feature Portal</h1>
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="/blog" class="btn" style="background: transparent; border: 1px solid var(--border-color);">Blog</a>
+            <a href="/collab" class="btn" style="background: transparent; border: 1px solid var(--border-color);">Collab</a>
+            <a href="/store" class="btn" style="background: transparent; border: 1px solid var(--border-color);">Store</a>
+            <a href="/admin" class="btn" style="background: #3b82f6; border-color: transparent;">💎 Admin Console</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>WebSpeed Framework Capabilities Showcase</h2>
+        <p style="color: var(--text-secondary);">An interactive playground to compare and test core open-source components side-by-side with enterprise-grade premium features.</p>
+
+        <div class="split-layout">
+            <!-- Free Community Features Panel -->
+            <div class="feature-panel">
+                <span class="badge-tag free">Community (Free)</span>
+                <h3>🟢 Core Framework Features</h3>
+                <p style="color: var(--text-secondary); margin: 0;">Minimalist, ultra-high performance foundations targeting small deployments, static content rendering, and standard REST APIs.</p>
+
+                <!-- Feature 1: ActiveRecord -->
+                <div class="interactive-box">
+                    <h4>🗄️ Zero-Config ActiveRecord Models</h4>
+                    <span style="font-size: 0.85rem; color: var(--text-secondary);">Currently loaded database records:</span>
+                    <strong style="font-size: 1.5rem; color: #10b981;">{{ productsCount }} Products</strong>
+                </div>
+
+                <!-- Feature 2: Templates -->
+                <div class="interactive-box">
+                    <h4>📄 Lightweight MPA Templates</h4>
+                    <span style="font-size: 0.85rem; color: var(--text-secondary);">Server-side double-bracket placeholder interpolation:</span>
+                    <div class="output-box" style="color: var(--text-secondary);">Title: {{ title }}</div>
+                </div>
+            </div>
+
+            <!-- Premium Enterprise Features Panel -->
+            <div class="feature-panel premium">
+                <span class="badge-tag premium">Enterprise (Premium)</span>
+                <h3>💎 Advanced Premium Features</h3>
+                <p style="color: var(--text-secondary); margin: 0;">Relational SQL schemas, automatic schema migrations, schema validation, and secure authentication hooks.</p>
+
+                <!-- Feature 1: JWT Authenticated Access -->
+                <div class="interactive-box">
+                    <h4>🔑 JWT Authentication Scaffolding</h4>
+                    <div class="form-row" id="login-form">
+                        <input type="text" id="username" placeholder="Username (e.g. admin)">
+                        <input type="password" id="password" placeholder="Password">
+                        <button class="btn" style="padding: 0.5rem 1rem;" onclick="login()">Login</button>
+                    </div>
+                    <div id="auth-output" class="output-box" style="display: none;"></div>
+                    <div class="form-row" id="profile-action" style="display: none;">
+                        <button class="btn" style="width: 100%;" onclick="fetchProfile()">Verify Auth Profile (GET /api/auth/me)</button>
+                    </div>
+                </div>
+
+                <!-- Feature 2: Zod Schema Validation -->
+                <div class="interactive-box">
+                    <h4>🛡️ strict Zod Schema Validation</h4>
+                    <span style="font-size: 0.85rem; color: var(--text-secondary);">Try creating a task: title must be at least 1 character.</span>
+                    <div class="form-row">
+                        <input type="text" id="task-title" placeholder="Task Title (leave blank to trigger error)">
+                        <button class="btn" style="padding: 0.5rem 1rem;" onclick="createTask()">Create Task</button>
+                    </div>
+                    <div id="validation-output" class="output-box" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let jwtToken = '';
+
+        // JWT Login Demonstration
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const output = document.getElementById('auth-output');
+
+            output.style.display = 'block';
+            output.className = 'output-box';
+            output.innerText = 'Logging in...';
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                
+                if (res.status === 200) {
+                    jwtToken = data.token;
+                    output.innerText = `Token generated:\n${jwtToken}`;
+                    document.getElementById('profile-action').style.display = 'flex';
+                } else {
+                    output.className = 'output-box error';
+                    output.innerText = `Login failed (Status ${res.status}):\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (err) {
+                output.className = 'output-box error';
+                output.innerText = `Network error: ${err.message}`;
+            }
+        }
+
+        async function fetchProfile() {
+            const output = document.getElementById('auth-output');
+            try {
+                const res = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${jwtToken}` }
+                });
+                const data = await res.json();
+                output.className = 'output-box';
+                output.innerText = `Decoded User profile:\n${JSON.stringify(data, null, 2)}`;
+            } catch (err) {
+                output.className = 'output-box error';
+                output.innerText = `Error: ${err.message}`;
+            }
+        }
+
+        // Zod Schema Validation Demonstration
+        async function createTask() {
+            const title = document.getElementById('task-title').value;
+            const output = document.getElementById('validation-output');
+
+            output.style.display = 'block';
+            output.className = 'output-box';
+            output.innerText = 'Creating task...';
+
+            try {
+                const res = await fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title })
+                });
+                const data = await res.json();
+                
+                if (res.status === 201) {
+                    output.innerText = `Task Created successfully:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    output.className = 'output-box error';
+                    output.innerText = `Validation Error (Status ${res.status}):\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (err) {
+                output.className = 'output-box error';
+                output.innerText = `Network error: ${err.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

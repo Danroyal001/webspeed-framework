@@ -6,6 +6,7 @@ import collabController from '../../examples/collab-board/CollabController';
 import storeController from '../../examples/store-catalog/StoreController';
 import authController from './AuthController';
 import adminController from './AdminController';
+import premiumShowcaseController from '../../examples/premium-showcase/PremiumShowcaseController';
 
 let routingControllers: RoutingController[] = [
     ctrl,
@@ -14,7 +15,8 @@ let routingControllers: RoutingController[] = [
     collabController,
     storeController,
     authController,
-    adminController
+    adminController,
+    premiumShowcaseController
 ];
 
 export default routingControllers;
