@@ -205,6 +205,36 @@ async function runTests() {
         assert(Array.isArray(products) && products.length === 1, 'GET /store/api/products returns exactly 1 seeded product');
         assert(products[0].name === 'Test Gadget', 'Seeded product has correct name');
 
+        // Test 4. Validation and Authentication Scaffolding
+        console.log('\n--- Testing E2E Validation & Authentication Scaffolding ---');
+
+        // A. Test Task Validation failure (Title is required / too short)
+        res = await makeRequest('POST', '/api/tasks', {}, { description: 'Missing title' });
+        assert(res.statusCode === 400, 'POST /api/tasks returns status 400 when title is missing');
+        assert(res.body.includes('Validation failed'), 'Error body indicates validation failure');
+
+        // B. Test Login Validation failure
+        res = await makeRequest('POST', '/api/auth/login', {}, { username: 'ad', password: '12' });
+        assert(res.statusCode === 400, 'POST /api/auth/login returns status 400 for short user/pass');
+
+        // C. Test Successful Login and JWT generation
+        res = await makeRequest('POST', '/api/auth/login', {}, { username: 'admin', password: 'password' });
+        assert(res.statusCode === 200, 'POST /api/auth/login returns status 200 for valid credentials');
+        let authBody = JSON.parse(res.body);
+        assert(!!authBody.token, 'Response contains auth JWT token');
+        const token = authBody.token;
+
+        // D. Test Authenticated access to profile (Unauthorized)
+        res = await makeRequest('GET', '/api/auth/me');
+        assert(res.statusCode === 401, 'GET /api/auth/me returns status 401 without auth header');
+
+        // E. Test Authenticated access to profile (Success)
+        res = await makeRequest('GET', '/api/auth/me', { 'Authorization': `Bearer ${token}` });
+        assert(res.statusCode === 200, 'GET /api/auth/me returns status 200 with valid token');
+        let profileBody = JSON.parse(res.body);
+        assert(profileBody.user.username === 'admin', 'Returned profile username matches logged in user');
+        assert(profileBody.user.role === 'admin', 'Returned profile role matches expected');
+
     } catch (error) {
         console.error('Test Execution Error:', error);
         stats.failed++;

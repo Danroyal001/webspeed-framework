@@ -32,7 +32,8 @@ class DatabaseQueryBuilder<T extends DatabaseModel> {
         const driver = dbConnection.getDriver();
         const records = await driver.read(this.collectionName, this.queryObj, {
             limit: this.limitVal,
-            offset: this.offsetVal
+            offset: this.offsetVal,
+            schema: (this.modelClass as any).schema
         });
         return records.map(record => {
             // Instantiate using fromObject or standard constructor
@@ -47,12 +48,16 @@ class DatabaseQueryBuilder<T extends DatabaseModel> {
 
     async update(data: any): Promise<boolean> {
         const driver = dbConnection.getDriver();
-        return await driver.update(this.collectionName, this.queryObj, data);
+        return await driver.update(this.collectionName, this.queryObj, data, {
+            schema: (this.modelClass as any).schema
+        });
     }
 
     async delete(): Promise<boolean> {
         const driver = dbConnection.getDriver();
-        return await driver.delete(this.collectionName, this.queryObj);
+        return await driver.delete(this.collectionName, this.queryObj, {
+            schema: (this.modelClass as any).schema
+        });
     }
 }
 

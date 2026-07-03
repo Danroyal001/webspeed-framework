@@ -1,5 +1,6 @@
 import RoutingController, { RouteContext } from './RoutingController';
 import Task from '../../database/databaseModels/Task';
+import { z } from 'zod';
 
 class TaskApiController extends RoutingController {
     constructor() {
@@ -31,10 +32,15 @@ class TaskApiController extends RoutingController {
     // Handles POST /api/tasks
     async post(context: RouteContext) {
         try {
-            const body = context.getBody();
-            if (!body || !body.title) {
-                return context.json({ error: 'Title is required' }, 400);
-            }
+            const taskSchema = z.object({
+                title: z.string().min(1, 'Title is required'),
+                description: z.string().optional(),
+                completed: z.boolean().optional()
+            });
+
+            const body = context.validateBody<{ title: string; description?: string; completed?: boolean }>(taskSchema);
+            if (!body) return;
+
             const task = new Task({
                 title: body.title,
                 description: body.description || '',

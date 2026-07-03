@@ -136,6 +136,29 @@ export class RouteContext {
         this.finish(JSON.stringify(data));
     }
 
+    /**
+     * Validate request body against a Zod-like schema.
+     * Automatically returns a 400 response with error details on failure.
+     */
+    validateBody<T>(schema: { safeParse: (data: any) => { success: boolean; data?: any; error?: any } }): T | null {
+        const result = schema.safeParse(this.request.body);
+        if (!result.success) {
+            this.json({
+                error: 'Validation failed',
+                details: result.error.format ? result.error.format() : result.error
+            }, 400);
+            return null;
+        }
+        return result.data as T;
+    }
+
+    /**
+     * Get the authenticated user payload (set by authMiddleware).
+     */
+    getUser<T>(): T | undefined {
+        return (this.request as any).user;
+    }
+
 
     /**
      * Default action for inexistent routes
